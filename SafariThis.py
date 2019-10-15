@@ -59,8 +59,10 @@ class PostInfo(NamedTuple):
     
     @classmethod
     def from_url(cls, page_url: str) -> 'PostInfo':
-        title_separators = ['|', ':', '-']
-        result = requests.get(page_url)
+        title_separators = [' |', ' : ', ' - ']
+        # need to configure a custom user agent
+        # https://meta.m.wikimedia.org/wiki/User-Agent_policy
+        result = requests.get(page_url, headers={'User-Agent': 'SafariThis/0.1'})
         contents = result.text
         soup = BeautifulSoup(contents, 'html5lib')
         page_title = soup.title.string
@@ -88,9 +90,10 @@ def make_safari_template(thread_url: str, post_title: str, site_name: str, curre
         f"Analysis date: {current_date}  \n"
         f"Post date: YYYY-MM-DD\n"
         f"\n## Painstorming\n\n"
+        f"\n## Buys\n\n"
+        f"\n## Recommendations\n\n"
         f"\n## Hidden Pains\n\n"
         f"\n## Jargons\n\n"
-        f"\n## Recommendations\n\n"
         f"\n## Worldviews\n\n"
     )
     return subst_result
@@ -102,8 +105,7 @@ def safari_url(thread_url: str) -> str:
     analysis_date_str = now.strftime('%Y-%m-%d')
     return make_safari_template(thread_url, info.thread_title, info.site_name, analysis_date_str)
 
-
-if __name__ == '__main__':
+def main_app_extension():
     import appex
     import webbrowser
     import console
@@ -118,11 +120,28 @@ if __name__ == '__main__':
         all_docs = "\n---\n".join(result_list)
         docs_url = quote(all_docs, safe='')
         # Open IA Writer to handle the new document
-        result_cmd = 'ia-writer://new?&text={}'.format(docs_url)
+        result_cmd = f'ia-writer://new?&text={docs_url}&edit=true'
     finally:
         console.hide_activity()
         appex.finish()
     if result_cmd is not None:
         webbrowser.open(result_cmd)
 
-
+def main_pythonista():
+    # TODO
+    pass
+    
+def main_cmdline():
+    # TODO
+    pass
+    
+if __name__ == '__main__':
+    try:
+        import appex
+        # Successful, running in Pythonista
+        if appex.is_running_extension():
+            main_app_extension()
+        else:
+            main_pythonista()
+    except ImportError:
+        main_cmdline()
