@@ -105,7 +105,7 @@ def safari_url(thread_url: str) -> str:
     analysis_date_str = now.strftime('%Y-%m-%d')
     return make_safari_template(thread_url, info.thread_title, info.site_name, analysis_date_str)
 
-def main_app_extension():
+def main_app_extension() -> int:
     import appex
     import webbrowser
     import console
@@ -126,22 +126,41 @@ def main_app_extension():
         appex.finish()
     if result_cmd is not None:
         webbrowser.open(result_cmd)
+    return 0
 
-def main_pythonista():
+
+def main_pythonista() -> int:
     # TODO
-    pass
-    
-def main_cmdline():
-    # TODO
-    pass
-    
+    return 0
+
+
+def main_cmdline() -> int:
+    """
+    Read standard input line by line and interpret is as a URL
+    """
+    import subprocess
+    try:
+        while True:
+            line = input()
+            markdown_template = safari_url(line)
+            docs_url = quote(markdown_template, safe='')
+            # Open IA Writer to handle the new document
+            result_cmd = f'ia-writer://new?&text={docs_url}&edit=true'
+            subprocess.run(['open', result_cmd])
+    except EOFError:
+        pass
+    return 0
+
+
 if __name__ == '__main__':
     try:
         import appex
         # Successful, running in Pythonista
         if appex.is_running_extension():
-            main_app_extension()
+            sys.exit(main_app_extension())
         else:
-            main_pythonista()
-    except ImportError:
-        main_cmdline()
+            sys.exit(main_pythonista())
+    except ModuleNotFoundError:
+        pass
+    sys.exit(main_cmdline())
+
