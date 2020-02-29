@@ -126,7 +126,8 @@ def main_app_extension() -> int:
         last_title_encoded = quote(last_title, safe='')
         # Open IA Writer to handle the new document
         # result_cmd = f'ia-writer://new?&text={docs_url}&edit=true'
-        result_cmd = f'x-devonthink://clip?text={docs_url}&location={last_url_encoded}&title={last_title_encoded}'
+        #result_cmd = f'x-devonthink://clip?text={docs_url}&location={last_url_encoded}&title={last_title_encoded}'
+        result_cmd = f'x-devonthink://createMarkdown?text={docs_url}&title={last_title_encoded}&tags=Safari%20Gold'
     finally:
         console.hide_activity()
         appex.finish()
