@@ -11,7 +11,7 @@ Typical workflow:
  3. Select this script.
  4. The script will get the URL and extract the page title and site name 
     create a markdown file.
- 5. The script will invoke IA Writer to edit the new markdown file.
+ 5. The script will invoke DevonThink To Go to edit the new markdown file.
 
 """
 
@@ -96,14 +96,14 @@ def make_safari_template(thread_url: str, post_title: str, site_name: str, curre
         f"\n## Jargons\n\n"
         f"\n## Worldviews\n\n"
     )
-    return subst_result
+    return str(subst_result)
 
 
-def safari_url(thread_url: str) -> str:
+def safari_url(thread_url: str) -> (str, str):
     info = PostInfo.from_url(thread_url)
     now = datetime.now()
     analysis_date_str = now.strftime('%Y-%m-%d')
-    return make_safari_template(thread_url, info.thread_title, info.site_name, analysis_date_str)
+    return make_safari_template(thread_url, info.thread_title, info.site_name, analysis_date_str), info.thread_title
 
 def main_app_extension() -> int:
     import appex
@@ -111,16 +111,22 @@ def main_app_extension() -> int:
     import console
     result_cmd = None
     console.show_activity()
+    last_url = None
+    last_title = None
     try:
         url_list = appex.get_urls()
         result_list = []
         for url in url_list:
-            markdown_template = safari_url(url)
+            last_url = url
+            markdown_template, last_title = safari_url(url)
             result_list.append(markdown_template)
         all_docs = "\n---\n".join(result_list)
         docs_url = quote(all_docs, safe='')
+        last_url_encoded = quote(last_url, safe='')
+        last_title_encoded = quote(last_title, safe='')
         # Open IA Writer to handle the new document
-        result_cmd = f'ia-writer://new?&text={docs_url}&edit=true'
+        # result_cmd = f'ia-writer://new?&text={docs_url}&edit=true'
+        result_cmd = f'x-devonthink://clip?text={docs_url}&location={last_url_encoded}&title={last_title_encoded}'
     finally:
         console.hide_activity()
         appex.finish()
@@ -141,11 +147,13 @@ def main_cmdline() -> int:
     import subprocess
     try:
         while True:
-            line = input()
-            markdown_template = safari_url(line)
-            docs_url = quote(markdown_template, safe='')
-            # Open IA Writer to handle the new document
-            result_cmd = f'ia-writer://new?&text={docs_url}&edit=true'
+            url_input = input()
+            markdown_template, title = safari_url(url_input)
+            markdown_encoded = quote(markdown_template, safe='')
+            url_encoded = quote(url_input, safe='')
+            title_encoded = quote(title, safe='')
+            #result_cmd = f'ia-writer://new?&text={markdown_encoded}&edit=true'
+            result_cmd = f'x-devonthink://createMarkdown?text={markdown_encoded}&title={title_encoded}&tags=Safari%20Gold'
             subprocess.run(['open', result_cmd])
     except EOFError:
         pass
@@ -163,4 +171,3 @@ if __name__ == '__main__':
     except ModuleNotFoundError:
         pass
     sys.exit(main_cmdline())
-
