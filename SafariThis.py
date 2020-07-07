@@ -65,6 +65,8 @@ class PostInfo(NamedTuple):
         result = requests.get(page_url, headers={'User-Agent': 'SafariThis/0.1'})
         contents = result.text
         soup = BeautifulSoup(contents, 'html5lib')
+        if soup.title is None:       
+            soup = BeautifulSoup(contents, 'html.parser')
         page_title = soup.title.string
         sep_char = None
         components = None
@@ -138,6 +140,11 @@ def main_app_extension() -> int:
 
 def main_pythonista() -> int:
     # TODO
+    
+    url_input = 'https://developer.apple.com/forums/thread/113123'
+    #url_input = 'https://forums.swift.org/t/found-swift-through-swift-for-tensorflow-programming-background-python-c-haskell/22169/3'
+    markdown_template, title = safari_url(url_input)
+    print(f"Title: {title}")
     return 0
 
 
