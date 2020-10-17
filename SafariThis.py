@@ -166,10 +166,6 @@ def main_cmdline() -> int:
             url_encoded = quote(url_input, safe='')
             title_encoded = quote(title, safe='')
 
-            #devonthink_cmd = f'x-devonthink://createMarkdown?text={markdown_encoded}&title={title_encoded}&tags=Safari%20Gold'
-            #devonthink_result = subprocess.run(['open', devonthink_cmd])
-            #if devonthink_result.returncode != 0:
-            #    ia_writer_cmd = f'ia-writer://new?&text={markdown_encoded}&edit=true'
             for cmd_gen in cmd_factory:
                 cmd_line = cmd_gen(markdown_encoded, title_encoded)
                 cmd_result = subprocess.run(['open', cmd_line])
