@@ -152,6 +152,11 @@ def main_cmdline() -> int:
     """
     Read standard input line by line and interpret is as a URL
     """
+    cmd_factory = [
+        lambda markdown_encoded, title_encoded: f'x-devonthink://createMarkdown?text={markdown_encoded}&title={title_encoded}&tags=Safari%20Gold',
+        lambda markdown_encoded, title_encoded: f'ia-writer://new?&text={markdown_encoded}&edit=true'
+    ]
+
     import subprocess
     try:
         while True:
@@ -160,9 +165,17 @@ def main_cmdline() -> int:
             markdown_encoded = quote(markdown_template, safe='')
             url_encoded = quote(url_input, safe='')
             title_encoded = quote(title, safe='')
-            #result_cmd = f'ia-writer://new?&text={markdown_encoded}&edit=true'
-            result_cmd = f'x-devonthink://createMarkdown?text={markdown_encoded}&title={title_encoded}&tags=Safari%20Gold'
-            subprocess.run(['open', result_cmd])
+
+            #devonthink_cmd = f'x-devonthink://createMarkdown?text={markdown_encoded}&title={title_encoded}&tags=Safari%20Gold'
+            #devonthink_result = subprocess.run(['open', devonthink_cmd])
+            #if devonthink_result.returncode != 0:
+            #    ia_writer_cmd = f'ia-writer://new?&text={markdown_encoded}&edit=true'
+            for cmd_gen in cmd_factory:
+                cmd_line = cmd_gen(markdown_encoded, title_encoded)
+                cmd_result = subprocess.run(['open', cmd_line])
+                if cmd_result.returncode == 0:
+                    break
+
     except EOFError:
         pass
     return 0
